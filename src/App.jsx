@@ -1,60 +1,55 @@
 import "./App.css";
-import Description from "./components/Description/Description";
-import Options from "./components/Options/Options";
-import Feedback from "./components/Feedback/Feedback";
-import Notification from "./components/Notification/Notification";
+import ContactForm from "./components/ContactForm/ContactForm";
 import { useEffect, useState } from "react";
+import SearchBox from "./components/SearchBox/SearchBox";
+import ContactList from "./components/ContactList/ContactList";
 
 function App() {
-  const getInitialFeedback = () => {
-    const savedFeedback = window.localStorage.getItem("saved-feedback");
-    if (savedFeedback !== null) {
-      return JSON.parse(savedFeedback);
-    } else {
-      return {
-        good: 0,
-        neutral: 0,
-        bad: 0,
-      };
-    }
+  const infocontact = [
+    { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
+    { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
+    { id: "id-3", name: "Eden Clements", number: "645-17-79" },
+    { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
+  ];
+
+  const getInitialContact = () => {
+    const savedContact = window.localStorage.getItem("saved-contact");
+    return savedContact ? JSON.parse(savedContact) : infocontact;
   };
 
-  const [feedback, setFeedback] = useState(getInitialFeedback);
+  const [contact, setContact] = useState(getInitialContact);
+  const [inputValue, setInputValue] = useState("");
 
-  const updateFeedback = (feedbackType) => {
-    setFeedback((prevFeedback) => ({
-      ...prevFeedback,
-      [feedbackType]: prevFeedback[feedbackType] + 1,
-    }));
+  const searchContact = contact.filter((contact) =>
+    contact.name.toLowerCase().includes(inputValue.toLowerCase())
+  );
+
+  const deleteContact = (id) => {
+    setContact((prevContacts) =>
+      prevContacts.filter((contact) => contact.id !== id)
+    );
   };
 
-  const resetFeedback = () => {
-    setFeedback({
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    });
+  const addContact = (newContact) => {
+    setContact((prevContacts) => [...prevContacts, newContact]);
   };
-
-  const totalFeedback = feedback.good + feedback.neutral + feedback.bad;
 
   useEffect(() => {
-    window.localStorage.setItem("saved-feedback", JSON.stringify(feedback));
-  }, [feedback]);
+    window.localStorage.setItem("saved-contact", JSON.stringify(contact));
+  }, [contact]);
 
   return (
     <>
-      <Description />
-      <Options
-        updateFeedback={updateFeedback}
-        totalFeedback={totalFeedback}
-        resetFeedback={resetFeedback}
+      <h1>Phonebook</h1>
+      <ContactForm onAdd={addContact} />
+      <SearchBox
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
       />
-      {totalFeedback > 0 ? (
-        <Feedback feedback={feedback} totalFeedback={totalFeedback} />
-      ) : (
-        <Notification />
-      )}
+      <ContactList
+        infocontacts={searchContact}
+        deleteContacts={deleteContact}
+      />
     </>
   );
 }
